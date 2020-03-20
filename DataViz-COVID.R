@@ -1,12 +1,22 @@
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# DataViz-COVID: Script for plotting COVID-19 data, retrieved from CSSEGISandData
+# Created by Joachim Goedhart (@joachimgoedhart), first version 2020
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 library(tidyverse)
 library(ggrepel)
 library(gganimate)
 library(lubridate)
 library(gifski)
 
+#From Color Universal Design (CUD): https://jfly.uni-koeln.de/color/
+Okabe_Ito <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000")
+newColors <- Okabe_Ito
+
 #This number defines the threshold number of cases to define 'days of onset'
 cutoff <- 100
 
+################################# Data loading and wrangling ########################
 #Data wrangling adapted from: https://rviews.rstudio.com/2020/03/05/covid-19-epidemiology-with-r/
 
 #Define URL
@@ -46,7 +56,7 @@ df_cum <- df_cum %>%
   ) 
 
 #Read population data, source: https://worldpopulationreview.com
-df_pop <- read.csv("pop_data.csv") %>% select('name','pop2020') %>% rename(country_region="name")
+df_pop <- read.csv("https://raw.githubusercontent.com/JoachimGoedhart/COVID-19_DataViz/master/pop_data.csv") %>% select('name','pop2020') %>% rename(country_region="name")
 
 #Add population data
 df_cum <- left_join(df_cum,df_pop, by="country_region")
@@ -58,84 +68,68 @@ df_cum <- df_cum %>% mutate(cases_per_10k = cumulative_cases/pop2020*10)
 df_sync <- df_cum %>% filter(cases_per_10k >= 0.01) %>%  group_by(country_region) %>%
   mutate(days_after_onset = row_number()) %>% ungroup()
 
-# Optional: save the dataframe in CSV format
-# write.csv(df_sync,"COVID.csv")
-
 # Read a list of countries that belong to Europe
-countries_of_europe <- read.csv("countries_of_europe.csv", header = FALSE) %>% unlist(use.names = FALSE)
+countries_of_europe <- read.csv("https://raw.githubusercontent.com/JoachimGoedhart/COVID-19_DataViz/master/countries_of_europe.csv", header = FALSE) %>% unlist(use.names = FALSE)
+
+#Filter the dataframe, leaving only European countries
+df_sync_eu <- df_sync %>% filter(country_region %in% countries_of_europe)
+
+
+################################# Plot cases vs days of onset ########################
+
+#Select a number of countries
+df_sync_eu_selected <- df_sync_eu %>% filter(country_region %in% c('Italy', 'France', 'Spain','Germany','United Kingdom', 'Netherlands','Norway'))
+
+#Generate dataframe for labels
+df_label <- df_sync_eu_selected %>% group_by(country_region) %>% filter(days_after_onset==last(days_after_onset))
+
 
 #Plot number of cases per 10,000 inhabitants versus date of onset
-# df_sync %>%
-#   filter(country_region %in% countries_of_europe) %>%
-# ggplot(aes(days_after_onset,cases_per_10k,color=country_region))+geom_line(size=1, alpha=.8) +geom_point()+
-#   #Log-scale
-#   scale_y_log10() +
-#   #add_labels
-#   geom_text(aes(x = days_after_onset, y=cases_per_10k, label = country_region, color = country_region),
-#                    hjust = 1,alpha=0.8,
-# #                  direction    = "y",
-#                     nudge_x = -0.05,nudge_y = 0.05,
-# #                   fontface = 'bold',
-# #                 fill = 'white',
-#                     size=5) +
-#   theme_classic(base_size = 16) +
-# 
-#   #This is where the magic happens
-#   transition_reveal(days_after_onset) +
-#   #Remove Legend
-#   theme(legend.position="none") +
-#   view_follow(fixed_y = F,fixed_x = T) +
-#   NULL
+onset_plot <- ggplot(df_sync_eu_selected, aes(days_after_onset,cases_per_10k,color=country_region))+geom_line(size=1, alpha=.8) +geom_point(size=2)+
+  geom_point(data=df_label, aes(x=days_after_onset,y=cases_per_10k,color=country_region), size =4)+
+  scale_color_manual(values=newColors)+
+  scale_fill_manual(values=newColors)+
+  #Log-scale
+  scale_y_log10() +
+
+  #add_labels
+  geom_label_repel(data = df_label, aes_string(label='country_region', x='days_after_onset', y='cases_per_10k', fill='country_region'),
+                   fontface = 'bold', color = 'white', size=6,
+                   nudge_x      = 10,
+                   # direction    = "y",
+                   hjust        = 0,
+                  point.padding = unit(.5, 'lines'),
+                   segment.color = 'grey50',
+                   segment.size = 0.5)+
+
   
+  #Define labels
+  labs(title = 'Number of confirmed cases versus days after case #100', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="Cases per 10.000 inhabitants (log-scale)", x="Days after confirmed case #100")+
   
+  #Define theme and fontsize
+  theme_classic(base_size = 18) +
+  #Remove Legend
+  theme(legend.position="none") +
+  #Styling the (sub)title
+  theme(plot.subtitle=element_text(size=12, face="italic", color="grey70"))+
+  theme(plot.title=element_text(size=20, face="bold", colour="grey20"), plot.title.position = "plot")+
   
+  NULL
+  
+  #Save plot
 
-#Plot number of cases per 10,000 inhabitants versus date
-# df_cum %>%  filter(country_region %in% countries_of_europe) %>%
-#   ggplot(aes(Date,cases_per_10k,color=country_region))+geom_line(size=2) + coord_cartesian(xlim = c(mdy("02-20-2020"),NA))+
-#   #add_labels
-#   geom_label(aes(x = Date, y=cases_per_10k, label = country_region, color = country_region),
-#                      hjust = 1,
-#              # nudge_x = 5,
-#                    #                   fontface = 'bold',
-#                    fill = 'white',
-#              size=5) +
-# 
-#   theme_classic(base_size = 16) +
-#   theme(plot.margin = margin(5.5, 5.5, 5.5, 5.5))+
-#   
-#   #This is where the magic happens       
-#   transition_reveal(Date) + 
-#   #Remove Legend
-#   theme(legend.position="none") +
-#   view_follow(fixed_y = FALSE, fixed_x = TRUE) +
-#   NULL
+png(file="COVID_EU_cases_onset.png", height = 600, width = 600)
+print(onset_plot)
+dev.off()
 
 
+################################# Generate animation ########################
 
-#Plot number of total cases versus date
-# df_cum %>%  filter(country_region %in% countries_of_europe) %>%
-#   ggplot(aes(Date,cumulative_cases,color=country_region))+geom_line(size=2) + coord_cartesian(xlim = c(mdy("02-20-2020"),NA))+
-#   #add_labels
-#   geom_text(aes(x = Date, y=cumulative_cases, label = country_region, color = country_region),
-#             hjust = 1,alpha=0.8,
-#             #                  direction    = "y",
-#             nudge_x = -0.05,nudge_y = 0.05,
-#             #                   fontface = 'bold',
-#             #                 fill = 'white',
-#             size=5) +
-#   theme_classic(base_size = 16) +
-#   theme(plot.margin = margin(5.5, 5.5, 5.5, 5.5))+
-#   
-#   #This is where the magic happens
-#   transition_reveal(Date) +
-#   #Remove Legend
-#   theme(legend.position="none") +
-#   view_follow(fixed_y = F,fixed_x = T) +
-#   NULL
-
-#Filter the dataframe, leaving only Eurpoean countries
+#Filter the dataframe, leaving only European countries
 df_cum_eu <- df_cum %>% filter(country_region %in% countries_of_europe)
+
+# Save the dataframe in CSV format
+write.csv(df_sync_eu,"COVID_EU.csv")
 
 #Rank the top-20 countries based on number of confirmed cases
 df_cum_ranked <-  df_cum_eu %>% filter(Date > "2020-03-01") %>%
@@ -171,15 +165,15 @@ anim <- ggplot(df_cum_ranked, aes(rank, group = country_region, fill = as.factor
   #Adjust margin
   theme(plot.margin = margin(1,4, 1, 4, "cm")) +
   #Adjust size/format of caption with the data source
-  theme(plot.caption=element_text(size=16, hjust=0.5, face="italic", color="grey20"))+
+  theme(plot.subtitle=element_text(size=16, face="italic", color="grey70"))+
   #Adjust size/format of title
   theme(plot.title=element_text(size=40, face="bold", colour="grey40"), plot.title.position = "panel")+
   #Define labels
-  labs(title = 'Number of confirmed cases on: {closest_state}', caption  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="Cases", x="")+
+  labs(title = 'Number of confirmed cases on: {closest_state}', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="Cases", x="")+
   #Define transition
-  transition_states(Date, transition_length = 2, state_length = 2) +
+  transition_states(Date, transition_length = 4, state_length = 2) +
   #define transition style (try 'elastic-in-out', 'cubic-in-out', 'sine-in-out')
-  ease_aes('cubic-in-out')+
+  ease_aes('sine-in-out')+
  
   NULL
 
