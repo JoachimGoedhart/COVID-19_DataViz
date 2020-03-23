@@ -20,19 +20,30 @@ cutoff <- 100
 #Data wrangling adapted from: https://rviews.rstudio.com/2020/03/05/covid-19-epidemiology-with-r/
 
 #Define URL
-jhu_url <- paste("https://raw.githubusercontent.com/CSSEGISandData/", 
+jhu_cases_url <- paste("https://raw.githubusercontent.com/CSSEGISandData/", 
                  "COVID-19/master/csse_covid_19_data/", "csse_covid_19_time_series/", 
                  "time_series_19-covid-Confirmed.csv", sep = "")
+jhu_deaths_url <- paste("https://raw.githubusercontent.com/CSSEGISandData/", 
+                 "COVID-19/master/csse_covid_19_data/", "csse_covid_19_time_series/", 
+                 "time_series_19-covid-Deaths.csv", sep = "")
 
 #Read the data from the URL
-df <- read.csv(jhu_url,check.names=FALSE)
+df_cases <- read.csv(jhu_cases_url,check.names=FALSE)
+df_deaths <- read.csv(jhu_deaths_url,check.names=FALSE)
+
+
 
 #Reshape the data into a long/tidy format
-df_long <- df %>% rename(province = "Province/State", country_region = "Country/Region") %>%
+df_long_cases <- df_cases %>% rename(province = "Province/State", country_region = "Country/Region") %>%
   pivot_longer(-c(province, country_region, Lat, Long), names_to = "Date", values_to = "cumulative_cases")
+df_long_deaths <- df_deaths %>% rename(province = "Province/State", country_region = "Country/Region") %>%
+  pivot_longer(-c(province, country_region, Lat, Long), names_to = "Date", values_to = "cumulative_deaths") %>% select('province', 'country_region', 'Date', 'cumulative_deaths')
+
+#Combine 'confirmed cases' and 'deaths' in a single dataframe
+df_cum <- df_long_cases %>% left_join(df_long_deaths, by=c('country_region','Date','province'))
 
 # Change date format, sort by date, remove cruise ship data
-df_cum <- df_long %>% mutate(Date = mdy(Date) ) %>% 
+df_cum <- df_cum %>% mutate(Date = mdy(Date) ) %>% 
 #  filter(country_region == "US") %>% 
   arrange(province, Date) %>% 
   ungroup() %>% filter(str_detect(province, "Diamond Princess", negate = TRUE))
@@ -41,10 +52,13 @@ df_cum <- df_long %>% mutate(Date = mdy(Date) ) %>%
 
 #Collapse province data into data per country/region
 df_cum <- df_cum %>% group_by(country_region,Date) %>% 
-  summarise(cumulative_cases=sum(cumulative_cases)) %>% ungroup()
+  summarise(cumulative_cases=sum(cumulative_cases), cumulative_deaths=sum(cumulative_deaths)) %>% ungroup()
 
 #Calculate incidents per day
 df_cum <- df_cum %>% group_by(country_region) %>% mutate(incident_cases = c(0, diff(cumulative_cases))) %>% ungroup()
+
+#Calculate deaths per day
+df_cum <- df_cum %>% group_by(country_region) %>% mutate(incident_deaths = c(0, diff(cumulative_deaths))) %>% ungroup()
 
 #Rename several countries for compatibility with the population data
 df_cum <- df_cum %>%
@@ -62,7 +76,7 @@ df_pop <- read.csv("https://raw.githubusercontent.com/JoachimGoedhart/COVID-19_D
 df_cum <- left_join(df_cum,df_pop, by="country_region")
 
 #Calculate cases per 10,000 inhabitants
-df_cum <- df_cum %>% mutate(cases_per_10k = cumulative_cases/pop2020*10)
+df_cum <- df_cum %>% mutate(cases_per_10k = cumulative_cases/pop2020*10, deaths_per_10k = cumulative_deaths/pop2020*10)
 
 #Generate a dataframe that synchronizes data by 'date of onset', defined by cutoff
 df_sync <- df_cum %>% filter(cases_per_10k >= 0.01) %>%  group_by(country_region) %>%
