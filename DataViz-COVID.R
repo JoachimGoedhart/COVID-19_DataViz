@@ -75,11 +75,11 @@ df_pop <- read.csv("https://raw.githubusercontent.com/JoachimGoedhart/COVID-19_D
 #Add population data
 df_cum <- left_join(df_cum,df_pop, by="country_region")
 
-#Calculate cases per 10,000 inhabitants
-df_cum <- df_cum %>% mutate(cases_per_10k = cumulative_cases/pop2020*10, deaths_per_10k = cumulative_deaths/pop2020*10)
+#Calculate cases per 100,000 inhabitants
+df_cum <- df_cum %>% mutate(cases_per_100k = cumulative_cases/pop2020*100, deaths_per_100k = cumulative_deaths/pop2020*100, inc_deaths_per_100k = incident_deaths/pop2020*100)
 
 #Generate a dataframe that synchronizes data by 'date of onset', defined by cutoff
-df_sync <- df_cum %>% filter(cases_per_10k >= 0.01) %>%  group_by(country_region) %>%
+df_sync <- df_cum %>% filter(cases_per_100k >= 0.1) %>%  group_by(country_region) %>%
   mutate(days_after_onset = row_number()) %>% ungroup()
 
 # Read a list of countries that belong to Europe
@@ -98,16 +98,16 @@ df_sync_eu_selected <- df_sync_eu %>% filter(country_region %in% c('Italy', 'Fra
 df_label <- df_sync_eu_selected %>% group_by(country_region) %>% filter(days_after_onset==last(days_after_onset))
 
 
-#Plot number of cases per 10,000 inhabitants versus date of onset
-onset_plot <- ggplot(df_sync_eu_selected, aes(days_after_onset,cases_per_10k,color=country_region))+geom_line(size=1, alpha=.8) +geom_point(size=2)+
-  geom_point(data=df_label, aes(x=days_after_onset,y=cases_per_10k,color=country_region), size =4)+
+#Plot number of cases per 100,000 inhabitants versus date of onset
+onset_plot <- ggplot(df_sync_eu_selected, aes(days_after_onset,cases_per_100k,color=country_region))+geom_line(size=1, alpha=.8) +geom_point(size=2)+
+  geom_point(data=df_label, aes(x=days_after_onset,y=cases_per_100k,color=country_region), size =4)+
   scale_color_manual(values=newColors)+
   scale_fill_manual(values=newColors)+
   #Log-scale
   scale_y_log10() +
 
   #add_labels
-  geom_label_repel(data = df_label, aes_string(label='country_region', x='days_after_onset', y='cases_per_10k', fill='country_region'),
+  geom_label_repel(data = df_label, aes_string(label='country_region', x='days_after_onset', y='cases_per_100k', fill='country_region'),
                    fontface = 'bold', color = 'white', size=6,
                    nudge_x      = 10,
                    # direction    = "y",
@@ -118,7 +118,7 @@ onset_plot <- ggplot(df_sync_eu_selected, aes(days_after_onset,cases_per_10k,col
 
   
   #Define labels
-  labs(title = 'Number of confirmed cases versus days after case #100', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="Cases per 10.000 inhabitants (log-scale)", x="Days after confirmed case #100")+
+  labs(title = 'Number of confirmed cases versus days after case #100', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="Cases per 100.000 inhabitants (log-scale)", x="Days after confirmed case #100")+
   
   #Define theme and fontsize
   theme_classic(base_size = 18) +
@@ -136,6 +136,63 @@ png(file="COVID_EU_cases_onset.png", height = 600, width = 600)
 print(onset_plot)
 dev.off()
 
+
+################################# Plot deaths per day corrected for pop ########################
+
+#Filter for larger countries and date
+df_cum_eu <- df_cum %>% filter(country_region %in% countries_of_europe) %>% filter(pop2020>9000) %>% filter(Date > "2020-03-01") 
+
+#Ensure that the order of the conditions is kept (otherwise ordering is alphabetical)
+#df_cum_eu$inc_deaths_per_100k <- factor(df$inc_deaths_per_100k, levels=unique(df$inc_deaths_per_100k))
+
+
+#Generate dataframe for labels
+df_label <- df_cum_eu %>% group_by(country_region) %>% filter(Date==(first(Date)))
+df_lastday <- df_cum_eu %>% group_by(country_region) %>% filter(Date!=(last(Date))) %>% filter(Date==(last(Date)))
+
+
+incidence_plot <- ggplot(df_cum_eu, aes(Date,inc_deaths_per_100k))+geom_bar(stat='identity', alpha=.8, fill='grey80') +
+    geom_bar(data=df_lastday, aes(Date,inc_deaths_per_100k), stat='identity',fill='orange')+
+    
+    #Define labels
+  geom_label(data=df_label, aes(label=country_region,x=Date,y=Inf), color='grey20', size =5,hjust=0,vjust=1)+
+
+    #Small multiples
+  facet_wrap(~country_region) +
+    
+    #Define labels
+    labs(title = 'Number of COVID-19 related deaths corrected for population', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="Deaths per 100.000 inhabtitants", x="Days")+
+    
+    
+    #Define theme and fontsize
+    theme_light(base_size = 18) +
+    #Remove Legend
+    theme(legend.position="none") +
+    
+    #Remove grid
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank())+
+    
+    #Remove upper, left and right axis
+    # theme(panel.border = element_blank(), axis.ticks = element_blank()) +
+    theme(axis.line.x  = element_line(colour = "grey"), axis.ticks.x.bottom = element_line(colour = "grey"))+
+    
+    #Styling the (sub)title
+    theme(plot.subtitle=element_text(size=12, face="italic", color="grey70"))+
+    theme(plot.title=element_text(size=20, face="bold", colour="grey20"), plot.title.position = "plot")+
+    
+    #Remove y-axis label
+    theme(axis.text.x=element_blank())+
+    #Remove the strip above the individual panels
+    theme(strip.background = element_blank()
+    , strip.text = element_blank()
+    , panel.spacing.y = unit(.5, "lines"),panel.spacing.x = unit(.5, "lines")
+    ) +
+    NULL
+  
+  png(file="COVID_EU_deaths.png", height = 600, width = 600)
+  print(incidence_plot)
+  dev.off()
 
 ################################# Generate animation ########################
 
