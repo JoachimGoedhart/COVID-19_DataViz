@@ -22,15 +22,21 @@ install.packages("tidyverse", "ggrepel", "gganimate","lubridate", "gifski")
 
 ## Output generated with the script
 
-* 
+
+
+
 ![Cases vs days](https://github.com/JoachimGoedhart/COVID-19_DataViz/raw/master/COVID_EU_cases_onset.png)
 
 
-* 
+
+
+
 
 ![Deaths per day](https://github.com/JoachimGoedhart/COVID-19_DataViz/raw/master/COVID_EU_deaths.png)
 
-* 
+
+
+
 
 ![Animated bars](https://github.com/JoachimGoedhart/COVID-19_DataViz/raw/master/COVID_EU.gif)
 
