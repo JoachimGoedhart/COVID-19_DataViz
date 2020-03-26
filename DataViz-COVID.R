@@ -142,8 +142,10 @@ dev.off()
 #Filter for larger countries and date
 df_cum_eu <- df_cum %>% filter(country_region %in% countries_of_europe) %>% filter(pop2020>9000) %>% filter(Date > "2020-03-01") 
 
-#Ensure that the order of the conditions is kept (otherwise ordering is alphabetical)
-#df_cum_eu$inc_deaths_per_100k <- factor(df$inc_deaths_per_100k, levels=unique(df$inc_deaths_per_100k))
+#Order
+reordered_list <- reorder(df_cum_eu$country_region, df_cum_eu$inc_deaths_per_100k, max, na.rm = TRUE)
+ordered_list <- levels(reordered_list)
+df_cum_eu$country_region <- factor(df_cum_eu$country_region, levels = ordered_list, ordered = TRUE)
 
 
 #Generate dataframe for labels
