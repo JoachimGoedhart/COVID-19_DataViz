@@ -20,7 +20,7 @@ install.packages("tidyverse", "ggrepel", "gganimate","lubridate", "gifski")
 * Animation of number of confirmed cases over time for 20 highest ranking European countries : COVID_EU.gif
 
 
-## Output generated with the script
+## Output generated with the script (March 26th, 2020)
 
 
 
@@ -29,13 +29,13 @@ install.packages("tidyverse", "ggrepel", "gganimate","lubridate", "gifski")
 
 
 
-
+---
 
 
 ![Deaths per day](https://github.com/JoachimGoedhart/COVID-19_DataViz/raw/master/COVID_EU_deaths.png)
 
 
-
+---
 
 
 ![Animated bars](https://github.com/JoachimGoedhart/COVID-19_DataViz/raw/master/COVID_EU.gif)
