@@ -22,10 +22,10 @@ cutoff <- 100
 #Define URL
 jhu_cases_url <- paste("https://raw.githubusercontent.com/CSSEGISandData/", 
                  "COVID-19/master/csse_covid_19_data/", "csse_covid_19_time_series/", 
-                 "time_series_19-covid-Confirmed.csv", sep = "")
+                 "time_series_covid19_confirmed_global.csv", sep = "")
 jhu_deaths_url <- paste("https://raw.githubusercontent.com/CSSEGISandData/", 
                  "COVID-19/master/csse_covid_19_data/", "csse_covid_19_time_series/", 
-                 "time_series_19-covid-Deaths.csv", sep = "")
+                 "time_series_covid19_deaths_global.csv", sep = "")
 
 #Read the data from the URL
 df_cases <- read.csv(jhu_cases_url,check.names=FALSE)
@@ -148,7 +148,9 @@ df_cum_eu <- df_cum %>% filter(country_region %in% countries_of_europe) %>% filt
 
 #Generate dataframe for labels
 df_label <- df_cum_eu %>% group_by(country_region) %>% filter(Date==(first(Date)))
-df_lastday <- df_cum_eu %>% group_by(country_region) %>% filter(Date!=(last(Date))) %>% filter(Date==(last(Date)))
+df_lastday <- df_cum_eu %>% group_by(country_region) %>%
+  # filter(Date!=(last(Date))) %>% 
+  filter(Date==(last(Date)))
 
 
 incidence_plot <- ggplot(df_cum_eu, aes(Date,inc_deaths_per_100k))+geom_bar(stat='identity', alpha=.8, fill='grey80') +
@@ -172,11 +174,7 @@ incidence_plot <- ggplot(df_cum_eu, aes(Date,inc_deaths_per_100k))+geom_bar(stat
     #Remove grid
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank())+
-    
-    #Remove upper, left and right axis
-    # theme(panel.border = element_blank(), axis.ticks = element_blank()) +
-    theme(axis.line.x  = element_line(colour = "grey"), axis.ticks.x.bottom = element_line(colour = "grey"))+
-    
+
     #Styling the (sub)title
     theme(plot.subtitle=element_text(size=12, face="italic", color="grey70"))+
     theme(plot.title=element_text(size=20, face="bold", colour="grey20"), plot.title.position = "plot")+
@@ -184,13 +182,10 @@ incidence_plot <- ggplot(df_cum_eu, aes(Date,inc_deaths_per_100k))+geom_bar(stat
     #Remove y-axis label
     theme(axis.text.x=element_blank())+
     #Remove the strip above the individual panels
-    theme(strip.background = element_blank()
-    , strip.text = element_blank()
-    , panel.spacing.y = unit(.5, "lines"),panel.spacing.x = unit(.5, "lines")
-    ) +
+    theme(strip.background = element_blank(), strip.text = element_blank(), panel.spacing.y = unit(.5, "lines"),panel.spacing.x = unit(.5, "lines")) +
     NULL
   
-  png(file="COVID_EU_deaths.png", height = 600, width = 600)
+  png(file="COVID_EU_deaths.png", height = 600, width = 800)
   print(incidence_plot)
   dev.off()
 
