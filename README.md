@@ -22,22 +22,22 @@ install.packages("tidyverse", "ggrepel", "gganimate","lubridate", "gifski")
 
 ## Output generated with the script
 
-* Confirmed cases per day (per 100.000 inhabitants on log-scale) after confirmation of the 100th case
+* 
 ![Cases vs days](https://github.com/JoachimGoedhart/COVID-19_DataViz/raw/master/COVID_EU_cases_onset.png)
 
 
-* New deaths per day for the 12 most populated countries of the EU (numbers normalized for number of inhabitants)
+* 
 
 ![Deaths per day](https://github.com/JoachimGoedhart/COVID-19_DataViz/raw/master/COVID_EU_deaths.png)
 
-*Animated cases per day for the top-ranking countries in Europe
+* 
 
 ![Animated bars](https://github.com/JoachimGoedhart/COVID-19_DataViz/raw/master/COVID_EU.gif)
 
     
 ## Future
 * Filter based on different continents
-* Switch between confirmed cases/deaths
+
 
 	
 	
