@@ -13,8 +13,8 @@ install the necessary packages (once, if necessary):
 install.packages("tidyverse", "ggrepel", "gganimate","lubridate", "gifski")
 
 ## Output
-* Plot with confirmed cases per province per day: COVID_NL_cases.png
-* Plot with total cases versus date: COVID_NL_tijd.png
+* Plot with new cases per province per day: COVID_NL_new_cases.png
+* Plot with total cases versus date: COVID_NL_total.png
 * Animation of increased number of cases over time: COVID_NL.gif
 
 
@@ -24,20 +24,20 @@ install.packages("tidyverse", "ggrepel", "gganimate","lubridate", "gifski")
 
 
 
-![Cases vs days](https://github.com/JoachimGoedhart/COVID-19_DataViz/raw/master/COVID_EU_cases_onset.png)
+![Cases vs days](https://raw.githubusercontent.com/JoachimGoedhart/COVID-19_DataViz/master/COVID-19_NL/COVID_NL_total.png)
 
 
 
 ---
 
 
-![Deaths per day](https://github.com/JoachimGoedhart/COVID-19_DataViz/raw/master/COVID_EU_deaths.png)
+![Deaths per day](https://raw.githubusercontent.com/JoachimGoedhart/COVID-19_DataViz/master/COVID-19_NL/COVID_NL_new_cases.png)
 
 
 ---
 
 
-![Animated bars](https://github.com/JoachimGoedhart/COVID-19_DataViz/raw/master/COVID_EU.gif)
+![Animated bars](https://raw.githubusercontent.com/JoachimGoedhart/COVID-19_DataViz/master/COVID-19_NL/COVID_NL.gif)
 
     
 
