@@ -16,7 +16,7 @@ install.packages("tidyverse", "ggrepel", "gganimate","lubridate", "gifski")
 ## Output
 * Animation of increased number of cases over time: COVID_world.gif
 * Plot with cases (normalized to population) after detection of case #100: COVID_world_cases_onset.png
-* Plot with COVID-19 related deaths per day versus date: COVID_world_cases_onset.png
+* Plot with COVID-19 related deaths per day versus date: COVID_world_deaths.png
 
 
 ## Output generated with the script (March 27th, 2020)
@@ -37,7 +37,7 @@ install.packages("tidyverse", "ggrepel", "gganimate","lubridate", "gifski")
 ---
 
 
-![Animated bars](https://raw.githubusercontent.com/JoachimGoedhart/COVID-19_DataViz/master/COVID-19_World/COVID_world_cases_onset.png)
+![Animated bars](https://raw.githubusercontent.com/JoachimGoedhart/COVID-19_DataViz/master/COVID-19_World/COVID_world_deaths.png)
 
     
 

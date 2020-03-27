@@ -31,8 +31,6 @@ jhu_deaths_url <- paste("https://raw.githubusercontent.com/CSSEGISandData/",
 df_cases <- read.csv(jhu_cases_url,check.names=FALSE)
 df_deaths <- read.csv(jhu_deaths_url,check.names=FALSE)
 
-
-
 #Reshape the data into a long/tidy format
 df_long_cases <- df_cases %>% rename(province = "Province/State", country_region = "Country/Region") %>%
   pivot_longer(-c(province, country_region, Lat, Long), names_to = "Date", values_to = "cumulative_cases")
