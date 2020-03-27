@@ -36,10 +36,11 @@ df_cum_prov <- df_cum %>% group_by(Provincienaam) %>% mutate(per_dag = c(0, diff
 
 ################################# Plot cases vs days of onset ########################
 
-#Order
+#Define Order
 reordered_list <- reorder(df_cum_prov$Provincienaam, df_cum_prov$totaal, max, na.rm = TRUE)
 ordered_list <- levels(reordered_list)
 
+#Set new order
 df_cum_prov$Provincienaam <- factor(df_cum_prov$Provincienaam, levels = ordered_list, ordered = TRUE)
   
 
@@ -81,7 +82,7 @@ aantal_plot <- ggplot(df_cum_prov, aes(Datum,totaal,color=Provincienaam))+geom_l
   
   #Save plot
 
-png(file="COVID_NL_tijd.png", height = 600, width = 600)
+png(file="COVID_NL_total.png", height = 600, width = 600)
 print(aantal_plot)
 dev.off()
 
@@ -127,7 +128,7 @@ incidence_plot <- ggplot(df_cum_prov, aes(Datum,per_dag))+geom_bar(stat='identit
     theme(strip.background = element_blank(), strip.text = element_blank(), panel.spacing.y = unit(.5, "lines"),panel.spacing.x = unit(.5, "lines")) +
     NULL
   
-  png(file="COVID_NL_cases.png", height = 600, width = 800)
+  png(file="COVID_NL_new_cases.png", height = 600, width = 800)
   print(incidence_plot)
   dev.off()
 
@@ -152,7 +153,7 @@ anim <- ggplot(df_cum_ranked, aes(rank, group = Provincienaam, fill = as.factor(
   coord_flip(clip = "off", expand = TRUE) +
   scale_x_reverse() +
   theme_light(base_size = 32)+
-  
+  scale_color_viridis_d(direction = -1) + scale_fill_viridis_d(direction=-1)+
   #Remove grid
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())+
@@ -169,7 +170,7 @@ anim <- ggplot(df_cum_ranked, aes(rank, group = Provincienaam, fill = as.factor(
   #Adjust size/format of caption with the data source
   theme(plot.subtitle=element_text(size=16, face="italic", color="grey70"))+
   #Adjust size/format of title
-  theme(plot.title=element_text(size=40, face="bold", colour="grey40"), plot.title.position = "panel")+
+  theme(plot.title=element_text(size=24, face="bold", colour="grey40"), plot.title.position = "panel")+
   #Define labels
   labs(title = 'Aantal geregistreerde gevallen op: {closest_state}', subtitle  = "Data from: https://github.com/J535D165/CoronaWatchNL", y="Aantal", x="")+
   #Define transition
@@ -180,7 +181,7 @@ anim <- ggplot(df_cum_ranked, aes(rank, group = Provincienaam, fill = as.factor(
   NULL
 
 #Save the animation as a GIF
-animate(anim, 100, fps = 10,  width = 1200, height = 1000, 
+animate(anim, 200, fps = 10,  width = 800, height = 600, 
         renderer = gifski_renderer("COVID_NL.gif"))
 
 

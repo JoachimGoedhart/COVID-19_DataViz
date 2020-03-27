@@ -195,6 +195,12 @@ incidence_plot <- ggplot(df_cum_eu, aes(Date,inc_deaths_per_100k))+geom_bar(stat
 
 #Filter the dataframe, leaving only European countries
 df_cum_eu <- df_cum %>% filter(country_region %in% countries_of_europe)
+  
+  #Order
+  reordered_list <- reorder(df_cum_eu$country_region, df_cum_eu$cumulative_cases, max, na.rm = TRUE)
+  ordered_list <- levels(reordered_list)  
+  #Set new order
+  df_cum_eu$country_region <- factor(df_cum_eu$country_region, levels = ordered_list, ordered = TRUE)
 
 # Save the dataframe in CSV format
 write.csv(df_sync_eu,"COVID_EU.csv")
@@ -218,6 +224,8 @@ anim <- ggplot(df_cum_ranked, aes(rank, group = country_region, fill = as.factor
   coord_flip(clip = "off", expand = TRUE) +
   scale_x_reverse() +
   theme_light(base_size = 32)+
+  scale_color_viridis_d(direction = -1) + scale_fill_viridis_d(direction=-1)+
+  
   
   #Remove grid
   theme(panel.grid.major = element_blank(),
@@ -231,11 +239,11 @@ anim <- ggplot(df_cum_ranked, aes(rank, group = country_region, fill = as.factor
   #Remove legend
   theme(legend.position="none")+
   #Adjust margin
-  theme(plot.margin = margin(1,4, 1, 4, "cm")) +
+  theme(plot.margin = margin(1,3, 1, 5, "cm")) +
   #Adjust size/format of caption with the data source
   theme(plot.subtitle=element_text(size=16, face="italic", color="grey70"))+
   #Adjust size/format of title
-  theme(plot.title=element_text(size=40, face="bold", colour="grey40"), plot.title.position = "panel")+
+  theme(plot.title=element_text(size=24, face="bold", colour="grey40"), plot.title.position = "plot")+
   #Define labels
   labs(title = 'Number of confirmed cases on: {closest_state}', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="Cases", x="")+
   #Define transition
@@ -245,9 +253,12 @@ anim <- ggplot(df_cum_ranked, aes(rank, group = country_region, fill = as.factor
  
   NULL
 
+
 #Save the animation as a GIF
-animate(anim, 100, fps = 10,  width = 1200, height = 1000, 
+animate(anim, 200, fps = 10,  width = 800, height = 800, 
         renderer = gifski_renderer("COVID_EU.gif"))
+
+
 
 
 
