@@ -107,7 +107,7 @@ incidence_plot <- ggplot(df_cum_prov, aes(Datum,per_dag))+geom_bar(stat='identit
   facet_wrap(~Provincienaam) +
     
     #Define labels
-    labs(title = 'Aantal geregistreerde COVID-19 gevallen', subtitle  = "Data from: https://github.com/J535D165/CoronaWatchNL", y="Aantal", x="Dagen")+
+    labs(title = 'Aantal geregistreerde COVID-19 gevallen per dag', subtitle  = "Data from: https://github.com/J535D165/CoronaWatchNL", y="Aantal", x="Dagen")+
     
     
     #Define theme and fontsize
