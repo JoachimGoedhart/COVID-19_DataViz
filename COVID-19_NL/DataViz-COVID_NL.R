@@ -18,7 +18,7 @@ newColors <- Okabe_Ito
 #Data wrangling adapted from: https://rviews.rstudio.com/2020/03/05/covid-19-epidemiology-with-r/
 
 #Define URL
-rivm_cases_url <- "https://raw.githubusercontent.com/J535D165/CoronaWatchNL/master/data/rivm_corona_in_nl.csv"
+rivm_cases_url <- "https://raw.githubusercontent.com/J535D165/CoronaWatchNL/master/data/rivm_NL_covid19_province.csv"
 
 #Read the data from the URL
 df_cases <- read.csv(rivm_cases_url,check.names=FALSE)
@@ -51,6 +51,7 @@ df_label <- df_cum_prov %>% group_by(Provincienaam) %>% filter(Datum==last(Datum
 #Plot number of cases versus date
 aantal_plot <- ggplot(df_cum_prov, aes(Datum,totaal,color=Provincienaam))+geom_line(size=1, alpha=.8) +geom_point(size=2)+
   geom_point(data=df_label, aes(x=Datum,y=totaal,color=Provincienaam), size =4)+
+  scale_color_viridis_d(direction = -1) + scale_fill_viridis_d(direction=-1)+
 
   #add_labels
   geom_text(data = df_label, aes_string(label='Provincienaam', x='Datum', y='totaal', color='Provincienaam'),

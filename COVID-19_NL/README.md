@@ -19,7 +19,7 @@ install.packages("tidyverse", "ggrepel", "gganimate","lubridate", "gifski")
 
 
 
-## Output generated with the script (March 27th, 2020)
+## Output generated with the script (data up to March 31st, 2020)
 
 
 

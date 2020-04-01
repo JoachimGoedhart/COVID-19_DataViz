@@ -260,6 +260,75 @@ animate(anim, 200, fps = 10,  width = 800, height = 800,
         renderer = gifski_renderer("COVID_world.gif"))
 
 
+################################# Generate animation - deaths ########################
+
+
+
+#Rank the top-20 countries based on number of confirmed cases
+df_cum_ranked <-  df_cum %>% filter(Date > "2020-02-20") %>%
+  group_by(Date)%>%      
+  mutate(rank = rank(-cumulative_deaths),
+         Value_rel = cumulative_deaths/cumulative_deaths[rank==1],
+         Value_lbl = paste0(" ",cumulative_deaths)) %>%
+  group_by(Country) %>%
+  filter(rank <= 20) %>% ungroup()
+
+#Order
+reordered_list <- reorder(df_cum_ranked$Country, df_cum_ranked$cumulative_deaths, max, na.rm = TRUE)
+ordered_list <- levels(reordered_list)  
+#Set new order
+df_cum_ranked$Country <- factor(df_cum_ranked$Country, levels = ordered_list, ordered = TRUE)  
+
+
+
+
+
+
+#Generate bars over time
+anim_deaths <- ggplot(df_cum_ranked, aes(rank, group = Country, fill = as.factor(Country), color = as.factor(Country)))+
+  geom_tile(aes(y = cumulative_deaths/2,
+                height = cumulative_deaths,
+                width = 0.8), alpha = 0.8, color = NA) +
+  geom_text(aes(y = 0, label = paste(Country, " ")), vjust = 0.2, hjust = 1, size = 7) + #determine size of the label
+  geom_text(aes(y=cumulative_deaths,label = Value_lbl, hjust=0),size = 8 ) +  #determine size of the value label
+  coord_flip(clip = "off", expand = TRUE) +
+  scale_x_reverse() +
+  theme_light(base_size = 32)+
+  scale_color_viridis_d(direction = -1) + scale_fill_viridis_d(direction=-1)+
+  
+  
+  #Remove grid
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  
+  #Remove upper, left and right axis
+  theme(panel.border = element_blank(), axis.ticks = element_blank()) +
+  theme(axis.line.x  = element_line(colour = "grey"), axis.ticks.x.bottom = element_line(colour = "grey"))+
+  #Remove y-axis label
+  theme(axis.text.y=element_blank())+
+  #Remove legend
+  theme(legend.position="none")+
+  #Adjust margin
+  theme(plot.margin = margin(1,3, 1, 5, "cm")) +
+  #Adjust size/format of caption with the data source
+  theme(plot.subtitle=element_text(size=16, face="italic", color="grey70"))+
+  #Adjust size/format of title
+  theme(plot.title=element_text(size=24, face="bold", colour="grey40"), plot.title.position = "plot")+
+  #Define labels
+  labs(title = 'Number of COVID-19 related deaths on: {closest_state}', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="", x="")+
+  #Define transition
+  transition_states(Date, transition_length = 4, state_length = 2) +
+  #define transition style (try 'elastic-in-out', 'cubic-in-out', 'sine-in-out')
+  ease_aes('sine-in-out')+
+  
+  NULL
+
+
+#Save the animation as a GIF
+animate(anim_deaths, 200, fps = 10,  width = 800, height = 800, 
+        renderer = gifski_renderer("COVID_world_deaths.gif"))
+
+
 
 
 
