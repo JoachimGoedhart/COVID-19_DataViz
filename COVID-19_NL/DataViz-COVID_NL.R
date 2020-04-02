@@ -1,13 +1,7 @@
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # DataViz-COVID: Script for plotting COVID-19 data, retrieved from https://zenodo.org/record/3725810/files/rivm_corona_in_nl.csv
 # Created by Joachim Goedhart (@joachimgoedhart), first version 2020
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-library(tidyverse)
-library(ggrepel)
-library(gganimate)
-library(lubridate)
-library(gifski)
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #From Color Universal Design (CUD): https://jfly.uni-koeln.de/color/
 Okabe_Ito <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000")
@@ -107,7 +101,7 @@ incidence_plot <- ggplot(df_cum_prov, aes(Datum,per_dag))+geom_bar(stat='identit
   facet_wrap(~Provincienaam) +
     
     #Define labels
-    labs(title = 'Aantal geregistreerde COVID-19 gevallen per dag', subtitle  = "Data from: https://github.com/J535D165/CoronaWatchNL", y="Aantal", x="Dagen")+
+    labs(title = 'Aantal nieuwe COVID-19 gevallen per dag', subtitle  = "Data from: https://github.com/J535D165/CoronaWatchNL", y="Aantal", x="Dagen")+
     
     
     #Define theme and fontsize

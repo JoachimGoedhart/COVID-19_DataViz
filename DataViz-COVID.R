@@ -86,49 +86,20 @@ countries_of_europe <- read.csv("https://raw.githubusercontent.com/JoachimGoedha
 #Filter the dataframe, leaving only European countries
 df_sync_eu <- df_sync %>% filter(country_region %in% countries_of_europe)
 
+# Save the dataframe in CSV format
+write.csv(df_sync_eu,"COVID_EU.csv")
 
 ################################# Plot cases vs days of onset ########################
+
+source("line_plot.R")
 
 #Select a number of countries
 df_sync_eu_selected <- df_sync_eu %>% filter(country_region %in% c('Italy', 'France', 'Spain','Germany','United Kingdom', 'Netherlands','Norway'))
 
-#Generate dataframe for labels
-df_label <- df_sync_eu_selected %>% group_by(country_region) %>% filter(days_after_onset==last(days_after_onset))
+onset_plot <- line_plot(df=df_sync_eu_selected, x_var=days_after_onset,y_var=cases_per_100k, group_var=country_region)
 
-
-#Plot number of cases per 100,000 inhabitants versus date of onset
-onset_plot <- ggplot(df_sync_eu_selected, aes(days_after_onset,cases_per_100k,color=country_region))+geom_line(size=1, alpha=.8) +geom_point(size=2)+
-  geom_point(data=df_label, aes(x=days_after_onset,y=cases_per_100k,color=country_region), size =4)+
-  scale_color_manual(values=newColors)+
-  scale_fill_manual(values=newColors)+
-  #Log-scale
-  scale_y_log10() +
-
-  #add_labels
-  geom_label_repel(data = df_label, aes_string(label='country_region', x='days_after_onset', y='cases_per_100k', fill='country_region'),
-                   fontface = 'bold', color = 'white', size=6,
-                   nudge_x      = 10,
-                   # direction    = "y",
-                   hjust        = 0,
-                  point.padding = unit(.5, 'lines'),
-                   segment.color = 'grey50',
-                   segment.size = 0.5)+
-
-  
-  #Define labels
-  labs(title = 'Number of confirmed cases versus days after case #100', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="Cases per 100.000 inhabitants (log-scale)", x="Days after confirmed case #100")+
-  
-  #Define theme and fontsize
-  theme_classic(base_size = 18) +
-  #Remove Legend
-  theme(legend.position="none") +
-  #Styling the (sub)title
-  theme(plot.subtitle=element_text(size=12, face="italic", color="grey70"))+
-  theme(plot.title=element_text(size=20, face="bold", colour="grey20"), plot.title.position = "plot")+
-  
-  NULL
-  
-  #Save plot
+#Define labels
+onset_plot <- onset_plot + labs(title = 'Number of confirmed cases versus days after case #100', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="Cases per 100.000 inhabitants (log-scale)", x="Days after confirmed case #100")
 
 png(file="COVID_EU_cases_onset.png", height = 600, width = 600)
 print(onset_plot)
@@ -145,45 +116,11 @@ reordered_list <- reorder(df_cum_eu$country_region, df_cum_eu$inc_deaths_per_100
 ordered_list <- levels(reordered_list)
 df_cum_eu$country_region <- factor(df_cum_eu$country_region, levels = ordered_list, ordered = TRUE)
 
+source("small_multiple.R")
 
-#Generate dataframe for labels
-df_label <- df_cum_eu %>% group_by(country_region) %>% filter(Date==(first(Date)))
-df_lastday <- df_cum_eu %>% group_by(country_region) %>%
-  # filter(Date!=(last(Date))) %>% 
-  filter(Date==(last(Date)))
+incidence_plot <- small_multiple(df_cum_eu, Date, inc_deaths_per_100k, country_region)
+incidence_plot <- incidence_plot + labs(title = 'Number of new COVID-19 related deaths per day (corrected for population', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="Deaths per 100.000 inhabtitants", x="Days")
 
-
-incidence_plot <- ggplot(df_cum_eu, aes(Date,inc_deaths_per_100k))+geom_bar(stat='identity', alpha=.8, fill='grey80') +
-    geom_bar(data=df_lastday, aes(Date,inc_deaths_per_100k), stat='identity',fill='orange')+
-    
-    #Define labels
-  geom_label(data=df_label, aes(label=country_region,x=Date,y=Inf), color='grey20', size =5,hjust=0,vjust=1)+
-
-    #Small multiples
-  facet_wrap(~country_region) +
-    
-    #Define labels
-    labs(title = 'Number of COVID-19 related deaths corrected for population', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="Deaths per 100.000 inhabtitants", x="Days")+
-    
-    
-    #Define theme and fontsize
-    theme_light(base_size = 18) +
-    #Remove Legend
-    theme(legend.position="none") +
-    
-    #Remove grid
-    theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank())+
-
-    #Styling the (sub)title
-    theme(plot.subtitle=element_text(size=12, face="italic", color="grey70"))+
-    theme(plot.title=element_text(size=20, face="bold", colour="grey20"), plot.title.position = "plot")+
-    
-    #Remove y-axis label
-    theme(axis.text.x=element_blank())+
-    #Remove the strip above the individual panels
-    theme(strip.background = element_blank(), strip.text = element_blank(), panel.spacing.y = unit(.5, "lines"),panel.spacing.x = unit(.5, "lines")) +
-    NULL
   
   png(file="COVID_EU_deaths.png", height = 600, width = 800)
   print(incidence_plot)
@@ -196,67 +133,25 @@ df_cum_eu <- df_cum %>% filter(country_region %in% countries_of_europe)
   
   #Order
   reordered_list <- reorder(df_cum_eu$country_region, df_cum_eu$cumulative_cases, max, na.rm = TRUE)
-  ordered_list <- levels(reordered_list)  
+  ordered_list <- levels(reordered_list)
   #Set new order
   df_cum_eu$country_region <- factor(df_cum_eu$country_region, levels = ordered_list, ordered = TRUE)
 
-# Save the dataframe in CSV format
-write.csv(df_sync_eu,"COVID_EU.csv")
 
-#Rank the top-20 countries based on number of confirmed cases
-df_cum_ranked <-  df_cum_eu %>% filter(Date > "2020-03-01") %>%
-  group_by(Date)%>%      
-  mutate(rank = rank(-cumulative_cases),
-         Value_rel = cumulative_cases/cumulative_cases[rank==1],
-         Value_lbl = paste0(" ",cumulative_cases)) %>%
-  group_by(country_region) %>%
-  filter(rank <= 20)
+source("animated_bars.R")
 
-#Generate bars over time
-anim <- ggplot(df_cum_ranked, aes(rank, group = country_region, fill = as.factor(country_region), color = as.factor(country_region)))+
-  geom_tile(aes(y = cumulative_cases/2,
-                height = cumulative_cases,
-                width = 0.8), alpha = 0.8, color = NA) +
-  geom_text(aes(y = 0, label = paste(country_region, " ")), vjust = 0.2, hjust = 1, size = 7) + #determine size of the label
-  geom_text(aes(y=cumulative_cases,label = Value_lbl, hjust=0),size = 8 ) +  #determine size of the value label
-  coord_flip(clip = "off", expand = TRUE) +
-  scale_x_reverse() +
-  theme_light(base_size = 32)+
-  scale_color_viridis_d(direction = -1) + scale_fill_viridis_d(direction=-1)+
-  
-  
-  #Remove grid
-  theme(panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank())+
-  
-  #Remove upper, left and right axis
-  theme(panel.border = element_blank(), axis.ticks = element_blank()) +
-  theme(axis.line.x  = element_line(colour = "grey"), axis.ticks.x.bottom = element_line(colour = "grey"))+
-  #Remove y-axis label
-  theme(axis.text.y=element_blank())+
-  #Remove legend
-  theme(legend.position="none")+
-  #Adjust margin
-  theme(plot.margin = margin(1,3, 1, 5, "cm")) +
-  #Adjust size/format of caption with the data source
-  theme(plot.subtitle=element_text(size=16, face="italic", color="grey70"))+
-  #Adjust size/format of title
-  theme(plot.title=element_text(size=24, face="bold", colour="grey40"), plot.title.position = "plot")+
-  #Define labels
-  labs(title = 'Number of confirmed cases on: {closest_state}', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="Cases", x="")+
-  #Define transition
-  transition_states(Date, transition_length = 4, state_length = 2) +
-  #define transition style (try 'elastic-in-out', 'cubic-in-out', 'sine-in-out')
-  ease_aes('sine-in-out')+
- 
-  NULL
+#Set the starting date
+df_cum_filtered <-  df_cum_eu %>% filter(Date > "2020-03-01") 
 
+anim <- animated_bars(df_cum_filtered, cumulative_cases, 20)
+
+#Define labels
+anim <- anim + labs(title = 'Number of confirmed cases on: {closest_state}', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="", x="")
+  
 
 #Save the animation as a GIF
 animate(anim, 200, fps = 10,  width = 800, height = 800, 
         renderer = gifski_renderer("COVID_EU.gif"))
-
-
 
 
 
