@@ -99,7 +99,7 @@ df_sync_eu_selected <- df_sync_eu %>% filter(country_region %in% c('Italy', 'Fra
 onset_plot <- line_plot(df=df_sync_eu_selected, x_var=days_after_onset,y_var=cases_per_100k, group_var=country_region)
 
 #Define labels
-onset_plot <- onset_plot + labs(title = 'Number of confirmed cases versus days after case #100', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="Cases per 100.000 inhabitants (log-scale)", x="Days after confirmed case #100")
+onset_plot <- onset_plot + labs(title = 'Total number of confirmed cases versus days after case #100', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="Cases per 100.000 inhabitants (log-scale)", x="Days after confirmed case #100")
 
 png(file="COVID_EU_cases_onset.png", height = 600, width = 600)
 print(onset_plot)
@@ -119,7 +119,7 @@ df_cum_eu$country_region <- factor(df_cum_eu$country_region, levels = ordered_li
 source("small_multiple.R")
 
 incidence_plot <- small_multiple(df_cum_eu, Date, inc_deaths_per_100k, country_region)
-incidence_plot <- incidence_plot + labs(title = 'Number of new COVID-19 related deaths per day (corrected for population', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="Deaths per 100.000 inhabtitants", x="Days")
+incidence_plot <- incidence_plot + labs(title = 'Number of new COVID-19 related deaths per day (corrected for population)', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="Deaths per 100.000 inhabtitants", x="Days")
 
   
   png(file="COVID_EU_deaths.png", height = 600, width = 800)
@@ -146,7 +146,7 @@ df_cum_filtered <-  df_cum_eu %>% filter(Date > "2020-03-01")
 anim <- animated_bars(df_cum_filtered, cumulative_cases, 20)
 
 #Define labels
-anim <- anim + labs(title = 'Number of confirmed cases on: {closest_state}', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="", x="")
+anim <- anim + labs(title = 'Total number of confirmed cases on: {closest_state}', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="", x="")
   
 
 #Save the animation as a GIF

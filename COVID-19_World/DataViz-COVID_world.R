@@ -165,7 +165,7 @@ incidence_plot <- ggplot(df_selected, aes(Date,inc_deaths_per_100k))+geom_bar(st
   facet_wrap(~Country) +
     
     #Define labels
-    labs(title = 'Number of COVID-19 related deaths corrected for population', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="Deaths per 100.000 inhabtitants", x="Days")+
+    labs(title = 'Number of new COVID-19 related deaths per day (corrected for population)', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="Deaths per 100.000 inhabtitants", x="Days")+
     
     
     #Define theme and fontsize
@@ -246,7 +246,7 @@ anim <- ggplot(df_cum_ranked, aes(rank, group = Country, fill = as.factor(Countr
   #Adjust size/format of title
   theme(plot.title=element_text(size=24, face="bold", colour="grey40"), plot.title.position = "plot")+
   #Define labels
-  labs(title = 'Number of confirmed cases on: {closest_state}', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="Cases", x="")+
+  labs(title = 'Total number of confirmed cases on: {closest_state}', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="Cases", x="")+
   #Define transition
   transition_states(Date, transition_length = 4, state_length = 2) +
   #define transition style (try 'elastic-in-out', 'cubic-in-out', 'sine-in-out')
@@ -315,7 +315,7 @@ anim_deaths <- ggplot(df_cum_ranked, aes(rank, group = Country, fill = as.factor
   #Adjust size/format of title
   theme(plot.title=element_text(size=24, face="bold", colour="grey40"), plot.title.position = "plot")+
   #Define labels
-  labs(title = 'Number of COVID-19 related deaths on: {closest_state}', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="", x="")+
+  labs(title = 'Total number of COVID-19 related deaths on: {closest_state}', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="", x="")+
   #Define transition
   transition_states(Date, transition_length = 4, state_length = 2) +
   #define transition style (try 'elastic-in-out', 'cubic-in-out', 'sine-in-out')
