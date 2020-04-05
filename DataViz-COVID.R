@@ -109,7 +109,7 @@ dev.off()
 ################################# Plot deaths per day corrected for pop ########################
 
 #Filter for larger countries and date
-df_cum_eu <- df_cum %>% filter(country_region %in% countries_of_europe) %>% filter(pop2020>9000) %>% filter(Date > "2020-03-01") 
+df_cum_eu <- df_cum %>% filter(country_region %in% countries_of_europe) %>% filter(pop2020>10100) %>% filter(Date > "2020-03-01") 
 
 #Order
 reordered_list <- reorder(df_cum_eu$country_region, df_cum_eu$inc_deaths_per_100k, max, na.rm = TRUE)
