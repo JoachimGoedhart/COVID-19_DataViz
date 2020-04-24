@@ -150,8 +150,7 @@ anim <- anim + labs(title = 'Total number of confirmed cases on: {closest_state}
   
 
 #Save the animation as a GIF
-animate(anim, 200, fps = 10,  width = 800, height = 800, 
-        renderer = gifski_renderer("COVID_EU.gif"))
+animate(anim, 200, fps = 10,  width = 800, height = 800, renderer = gifski_renderer("COVID_EU.gif"))
 
 
 
