@@ -18,8 +18,6 @@ small_multiple<- function(df, x_var, y_var, group_var) {
     # filter(x_var!=(last(x_var))) %>% 
     filter(!!x_var==(last(!!x_var)))
 
-
-
 multiple_plot <- ggplot(df, aes(!!x_var,!!y_var))+geom_bar(stat='identity', alpha=.8, fill='grey80') +
   geom_bar(data=df_lastday, aes(!!x_var,!!y_var), stat='identity',fill='orange')+
   

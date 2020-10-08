@@ -18,55 +18,59 @@ newColors <- Okabe_Ito
 #Data wrangling adapted from: https://rviews.rstudio.com/2020/03/05/covid-19-epidemiology-with-r/
 
 #Define URL
-rivm_cases_url <- "https://raw.githubusercontent.com/J535D165/CoronaWatchNL/master/data/rivm_NL_covid19_province.csv"
+# rivm_cases_url <- "https://raw.githubusercontent.com/J535D165/CoronaWatchNL/master/data/rivm_NL_covid19_province.csv"
+
+rivm_cases_url <- "https://raw.githubusercontent.com/J535D165/CoronaWatchNL/master/data-geo/data-provincial/RIVM_NL_provincial.csv"
 
 #Read the data from the URL
-df_cases <- read.csv(rivm_cases_url,check.names=FALSE)
+df_cases <- read.csv(rivm_cases_url,check.names=FALSE) %>% filter(Type =="Totaal")
 #df_deaths <- read.csv(jhu_deaths_url,check.names=FALSE)
 
 
 
-df_cases <- df_cases %>% mutate(Datum = ymd(Datum)) %>% arrange(Provincienaam, Datum) %>% filter(!is.na(Provincienaam))
 
-df_cum <- df_cases %>% group_by(Datum,Provincienaam) %>% summarise(totaal=sum(Aantal)) %>% filter(Provincienaam!="")
-
-#Calculate incidents per day
-df_cum_prov <- df_cum %>% group_by(Provincienaam) %>% mutate(per_dag = c(0, diff(totaal))) %>% ungroup()
+df_cases <- df_cases %>% mutate(Datum = ymd(Datum)) %>% arrange(Provincienaam, Datum) %>% filter(!is.na(Provincienaam))  %>% filter(Provincienaam!="")
+# 
+# df_cum <- df_cases %>% group_by(Datum,Provincienaam) %>% summarise(totaal=sum(Aantal)) %>% filter(Provincienaam!="")
+# 
+# #Calculate incidents per day
+# df_cum_prov <- df_cum %>% group_by(Provincienaam) %>% mutate(per_dag = c(0, diff(totaal))) %>% ungroup()
 
 
 ################################# Plot cases vs days of onset ########################
 
 #Define Order
-reordered_list <- reorder(df_cum_prov$Provincienaam, df_cum_prov$totaal, max, na.rm = TRUE)
+reordered_list <- reorder(df_cases$Provincienaam, df_cases$AantalCumulatief, max, na.rm = TRUE)
 ordered_list <- levels(reordered_list)
 
 #Set new order
-df_cum_prov$Provincienaam <- factor(df_cum_prov$Provincienaam, levels = ordered_list, ordered = TRUE)
+df_cases$Provincienaam <- factor(df_cases$Provincienaam, levels = ordered_list, ordered = TRUE)
   
 
 #Generate dataframe for labels
-df_label <- df_cum_prov %>% group_by(Provincienaam) %>% filter(Datum==last(Datum))
+df_label <- df_cases %>% group_by(Provincienaam) %>% filter(Datum==last(Datum))
 
 
 #Plot number of cases versus date
-aantal_plot <- ggplot(df_cum_prov, aes(Datum,totaal,color=Provincienaam))+geom_line(size=1, alpha=.8) +geom_point(size=2)+
-  geom_point(data=df_label, aes(x=Datum,y=totaal,color=Provincienaam), size =4)+
+aantal_plot <- ggplot(df_cases, aes(Datum,AantalCumulatief,color=Provincienaam))+geom_line(size=1, alpha=.8) +geom_point(size=2)+
+  geom_point(data=df_label, aes(x=Datum,y=AantalCumulatief,color=Provincienaam), size =4)+
   scale_color_viridis_d(direction = -1) + scale_fill_viridis_d(direction=-1)+
 
   #add_labels
-  geom_text(data = df_label, aes_string(label='Provincienaam', x='Datum', y='totaal', color='Provincienaam'),
+  geom_text(data = df_label, aes_string(label='Provincienaam', x='Datum', y='AantalCumulatief', color='Provincienaam'),
                    fontface = 'bold', size=4,
 
                    hjust= 0,
                    vjust=0,
             nudge_x = 1,
               check_overlap = TRUE,
+            NULL
                     )+
 
   
   
   #Define labels
-  labs(title = 'Aantal geregistreerde gevallen COVID-10 per provincie', subtitle  = "Data from: https://github.com/J535D165/CoronaWatchNL", y="Aantal", x="Datum")+
+  labs(title = 'Aantal geregistreerde gevallen COVID-10 per provincie', subtitle  = "Data from: https://github.com/J535D165/CoronaWatchNL", y="AantalCumulatief", x="Datum")+
   coord_cartesian(clip = 'off')+
   #Adjust margin
 
@@ -91,14 +95,14 @@ dev.off()
 #################################  ########################
 
 #Generate dataframe for labels
-df_label <- df_cum_prov %>% group_by(Provincienaam) %>% filter(Datum==first(Datum))
-df_label$Datum <- min(df_cum_prov$Datum)
-df_lastday <- df_cum_prov %>% group_by(Provincienaam) %>%
+df_label <- df_cases %>% group_by(Provincienaam) %>% filter(Datum==first(Datum))
+df_label$Datum <- min(df_cases$Datum)
+df_lastday <- df_cases %>% group_by(Provincienaam) %>%
   filter(Datum==(last(Datum)))
 
 
-incidence_plot <- ggplot(df_cum_prov, aes(Datum,per_dag))+geom_bar(stat='identity', alpha=.8, fill='grey80') +
-    geom_bar(data=df_lastday, aes(Datum,per_dag), stat='identity',fill='orange')+
+incidence_plot <- ggplot(df_cases, aes(Datum,Aantal))+geom_bar(stat='identity', alpha=.8, fill='grey80') +
+    geom_bar(data=df_lastday, aes(Datum,Aantal), stat='identity',fill='orange')+
     
     #Define labels
   geom_label(data=df_label, aes(label=Provincienaam,x=Datum,y=Inf), color='grey20', size =5,hjust=0,vjust=1)+
@@ -136,21 +140,21 @@ incidence_plot <- ggplot(df_cum_prov, aes(Datum,per_dag))+geom_bar(stat='identit
 ################################# Generate animation ########################
 
   #Rank the provinces
-  df_cum_ranked <-  df_cum_prov %>% filter(Datum > "2020-03-01") %>%
+  df_cases <-  df_cases %>% filter(Datum > "2020-03-01") %>%
     group_by(Datum)%>%      
-    mutate(rank = rank(-totaal),
-           Value_rel = totaal/totaal[rank==1],
-           Value_lbl = paste0(" ",totaal))
+    mutate(rank = rank(-AantalCumulatief),
+           Value_rel = AantalCumulatief/AantalCumulatief[rank==1],
+           Value_lbl = paste0(" ",AantalCumulatief))
 
 
 
 #Generate bars over time
-anim <- ggplot(df_cum_ranked, aes(rank, group = Provincienaam, fill = as.factor(Provincienaam), color = as.factor(Provincienaam)))+
-  geom_tile(aes(y = totaal/2,
-                height = totaal,
+anim <- ggplot(df_cases, aes(rank, group = Provincienaam, fill = as.factor(Provincienaam), color = as.factor(Provincienaam)))+
+  geom_tile(aes(y = AantalCumulatief/2,
+                height = AantalCumulatief,
                 width = 0.8), alpha = 0.8, color = NA) +
   geom_text(aes(y = 0, label = paste(Provincienaam, " ")), vjust = 0.2, hjust = 1, size = 7) + #determine size of the label
-  geom_text(aes(y=totaal,label = Value_lbl, hjust=0),size = 8 ) +  #determine size of the value label
+  geom_text(aes(y=AantalCumulatief,label = Value_lbl, hjust=0),size = 8 ) +  #determine size of the value label
   coord_flip(clip = "off", expand = TRUE) +
   scale_x_reverse() +
   theme_light(base_size = 32)+
@@ -173,7 +177,7 @@ anim <- ggplot(df_cum_ranked, aes(rank, group = Provincienaam, fill = as.factor(
   #Adjust size/format of title
   theme(plot.title=element_text(size=24, face="bold", colour="grey40"), plot.title.position = "panel")+
   #Define labels
-  labs(title = 'Aantal geregistreerde gevallen op: {closest_state}', subtitle  = "Data from: https://github.com/J535D165/CoronaWatchNL", y="Aantal", x="")+
+  labs(title = 'Aantal geregistreerde gevallen op: {closest_state}', subtitle  = "Data from: https://github.com/J535D165/CoronaWatchNL", y="AantalCumulatief", x="")+
   #Define transition
   transition_states(Datum, transition_length = 4, state_length = 2) +
   #define transition style (try 'elastic-in-out', 'cubic-in-out', 'sine-in-out')
@@ -189,6 +193,6 @@ animate(anim, 200, fps = 10,  width = 800, height = 600,
 
 ####################### Save the dataframe ####################
 # Save the dataframe in CSV format
-write.csv(df_cum_prov,"COVID_NL.csv")
+write.csv(df_cases,"COVID_NL.csv")
 
 

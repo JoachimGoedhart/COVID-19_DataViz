@@ -120,7 +120,7 @@ source("small_multiple.R")
 
 incidence_plot <- small_multiple(df_cum_eu, Date, inc_deaths_per_100k, country_region)
 incidence_plot <- incidence_plot + labs(title = 'Number of new COVID-19 related deaths per day (corrected for population)', subtitle  = "Data from: https://github.com/CSSEGISandData/COVID-19", y="Deaths per 100.000 inhabtitants", x="Days")
-
+incidence_plot <- incidence_plot + ylim(0,3)
   
   png(file="COVID_EU_deaths.png", height = 600, width = 800)
   print(incidence_plot)
